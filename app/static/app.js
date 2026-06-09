@@ -205,10 +205,11 @@ async function renderInsights() {
         <div class="num">${c}</div></div>`).join("") : '<div class="muted">No tasks.</div>'}
 
     <div class="section-title">Escalation trend</div>
-    ${ins.escalation_trend.length ? `<div style="display:flex;align-items:flex-end;gap:8px;height:120px">
-      ${ins.escalation_trend.map(t => `<div style="text-align:center;flex:1">
-        <div style="background:linear-gradient(180deg,var(--accent),var(--accent-2));border-radius:4px 4px 0 0;height:${(t.count / maxT) * 100}px"></div>
-        <div class="muted" style="font-size:10px;margin-top:4px">${esc(t.date.slice(5))}</div></div>`).join("")}
+    ${ins.escalation_trend.length ? `<div style="display:flex;align-items:flex-end;gap:10px;height:132px;padding:4px 2px">
+      ${ins.escalation_trend.map(t => `<div style="text-align:center;width:46px;flex:0 0 auto" title="${esc(t.date)}: ${t.count}">
+        <div style="font:600 11px var(--mono);color:var(--accent);margin-bottom:4px">${t.count}</div>
+        <div style="background:linear-gradient(180deg,var(--accent),var(--accent-2));border-radius:5px 5px 0 0;height:${Math.max(6,(t.count / maxT) * 92)}px;box-shadow:0 0 14px -3px var(--accent-glow)"></div>
+        <div class="muted" style="font:500 10px var(--mono);margin-top:6px">${esc(t.date.slice(5))}</div></div>`).join("")}
       </div>` : '<div class="muted">No escalations.</div>'}
 
     <div class="section-title">Top risks</div>
