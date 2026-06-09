@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IMIES · Meeting Intelligence</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">◆</span>
+      <div>
+        <h1>IMIES</h1>
+        <p>Intelligent Meeting Intelligence &amp; Escalation Tracking</p>
+      </div>
+    </div>
+    <div class="kpis" id="kpis"><!-- KPI chips injected --></div>
+  </header>
+
+  <main class="layout">
+    <!-- LEFT: ingest + ask -->
+    <aside class="sidebar">
+      <section class="card">
+        <h2>Ingest a meeting</h2>
+        <textarea id="ingestText" rows="9"
+          placeholder="Paste a meeting summary, transcript, or chat thread..."></textarea>
+        <div class="row">
+          <input id="ingestTitle" type="text" placeholder="Title (optional)" />
+        </div>
+        <div class="row">
+          <button id="ingestBtn" class="primary">Extract intelligence</button>
+          <label class="fileLabel">
+            Upload file<input id="fileInput" type="file" accept=".txt,.md" hidden />
+          </label>
+        </div>
+        <div id="ingestResult" class="result"></div>
+      </section>
+
+      <section class="card">
+        <h2>Ask your organization</h2>
+        <input id="queryInput" type="text"
+          placeholder="e.g. What are the current unresolved escalations?" />
+        <div class="chips" id="exampleQs">
+          <span data-q="What are the current unresolved escalations?">Unresolved escalations</span>
+          <span data-q="Which projects are at risk this week?">Projects at risk</span>
+          <span data-q="Show all pending tasks assigned to Rahul.">Rahul's tasks</span>
+          <span data-q="Which meetings discussed Vendor API issues?">Vendor API</span>
+          <span data-q="List all high-priority blockers across teams.">High-priority blockers</span>
+        </div>
+        <button id="queryBtn" class="primary">Ask</button>
+        <div id="queryResult" class="result"></div>
+      </section>
+    </aside>
+
+    <!-- RIGHT: tabbed intelligence -->
+    <section class="content">
+      <nav class="tabs">
+        <button class="tab active" data-tab="escalations">Escalations</button>
+        <button class="tab" data-tab="projects">Projects</button>
+        <button class="tab" data-tab="tasks">Tasks</button>
+        <button class="tab" data-tab="insights">Insights</button>
+        <button class="tab" data-tab="graph">Graph</button>
+        <button class="tab" data-tab="report">Report</button>
+      </nav>
+
+      <div class="tabpane active" id="tab-escalations"></div>
+      <div class="tabpane" id="tab-projects"></div>
+      <div class="tabpane" id="tab-tasks"></div>
+      <div class="tabpane" id="tab-insights"></div>
+      <div class="tabpane" id="tab-graph"></div>
+      <div class="tabpane" id="tab-report"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
