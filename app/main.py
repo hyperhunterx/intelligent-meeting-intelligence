@@ -127,6 +127,68 @@ def api_meeting_detail(meeting_id: int, db: Session = Depends(get_session)):
     }
 
 
+@app.delete("/api/meetings/{meeting_id}")
+def api_delete_meeting(meeting_id: int, db: Session = Depends(get_session)):
+    """Delete a meeting and EVERYTHING extracted from it.
+
+    Removes the meeting's tasks, escalations, risks, blockers, decisions and its
+    participant links. People and projects are shared across meetings, so we only
+    delete the ones that become orphaned (no longer referenced anywhere) — this
+    keeps the knowledge graph tidy without breaking other meetings.
+    """
+    m = db.get(Meeting, meeting_id)
+    if m is None:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+
+    title = m.title
+    counts = {"tasks": len(m.tasks), "escalations": len(m.escalations),
+              "risks": len(m.risks), "blockers": len(m.blockers),
+              "decisions": len(m.decisions)}
+
+    # Other escalations may point to this meeting's escalations as duplicates —
+    # null those references first so we don't leave a dangling foreign key.
+    esc_ids = [e.id for e in m.escalations]
+    if esc_ids:
+        db.query(Escalation).filter(Escalation.duplicate_of_id.in_(esc_ids)).update(
+            {Escalation.duplicate_of_id: None}, synchronize_session=False)
+
+    # Remember the people/projects this meeting touched, to check for orphans after.
+    people, projects = set(m.participants), set()
+    for coll in (m.tasks, m.escalations, m.risks, m.blockers, m.decisions):
+        for x in coll:
+            if getattr(x, "project", None):
+                projects.add(x.project)
+            if getattr(x, "owner", None):
+                people.add(x.owner)
+            if getattr(x, "raised_by", None):
+                people.add(x.raised_by)
+
+    # Delete the extracted items, then the participant links, then the meeting.
+    for coll in (m.tasks, m.escalations, m.risks, m.blockers, m.decisions):
+        for x in list(coll):
+            db.delete(x)
+    m.participants.clear()
+    db.delete(m)
+    db.flush()
+
+    # Orphan cleanup.
+    removed_people = removed_projects = 0
+    for p in people:
+        db.refresh(p)
+        if not p.meetings and not p.owned_tasks and not p.raised_escalations:
+            db.delete(p)
+            removed_people += 1
+    for pr in projects:
+        db.refresh(pr)
+        if not (pr.tasks or pr.escalations or pr.risks or pr.blockers or pr.decisions):
+            db.delete(pr)
+            removed_projects += 1
+    db.commit()
+
+    return {"deleted": True, "title": title, "removed": counts,
+            "orphans_removed": {"people": removed_people, "projects": removed_projects}}
+
+
 @app.get("/api/escalations")
 def api_escalations(db: Session = Depends(get_session)):
     return [{

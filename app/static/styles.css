@@ -153,6 +153,10 @@ tr:hover td { background: var(--panel-2); }
 button.ghost { background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
   border-radius: 8px; padding: 7px 12px; font: inherit; cursor: pointer; white-space: nowrap; }
 button.ghost:hover { border-color: var(--accent); }
+button.ghost:disabled { opacity: .5; cursor: progress; }
+button.ghost.danger { color: var(--red); }
+button.ghost.danger:hover { border-color: var(--red); background: rgba(255,92,108,.1); }
+.mactions { display: flex; gap: 8px; flex-shrink: 0; }
 .mbody { margin-top: 0; }
 .mcard.open .mbody { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }

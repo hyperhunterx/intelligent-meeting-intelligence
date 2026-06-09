@@ -125,11 +125,33 @@ async function renderMeetings() {
             ${(m.participants || []).map(p => `<span class="badge team">${esc(p)}</span>`).join(" ")}
           </div>
         </div>
-        <button class="ghost mtoggle">View transcript</button>
+        <div class="mactions">
+          <button class="ghost mtoggle">View transcript</button>
+          <button class="ghost danger mdelete" title="Delete this meeting and all data from it">Delete</button>
+        </div>
       </div>
       <div class="mbody"></div>
     </div>`).join("");
 }
+
+// Delete a meeting and everything extracted from it.
+document.addEventListener("click", async (ev) => {
+  const btn = ev.target.closest(".mdelete");
+  if (!btn) return;
+  const card = btn.closest(".mcard");
+  const title = card.querySelector("h3").textContent;
+  if (!confirm(`Delete "${title}" and ALL data extracted from it (tasks, escalations, risks, decisions)?\n\nThis cannot be undone.`)) return;
+  btn.disabled = true; btn.textContent = "Deleting...";
+  try {
+    const r = await api(`/api/meetings/${card.dataset.id}`, { method: "DELETE" });
+    const rm = r.removed;
+    toast(`Deleted "${r.title}" — ${rm.tasks} tasks, ${rm.escalations} escalations removed`);
+    renderMeetings(); refreshKpis();
+  } catch (e) {
+    btn.disabled = false; btn.textContent = "Delete";
+    toast("Delete failed: " + e.message);
+  }
+});
 
 // Expand/collapse a meeting card -> fetch full detail incl. raw transcript.
 document.addEventListener("click", async (ev) => {
