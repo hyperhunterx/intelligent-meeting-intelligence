@@ -37,6 +37,7 @@ function loadTab(name) {
   if (name === "escalations") renderEscalations();
   else if (name === "projects") renderProjects();
   else if (name === "tasks") renderTasks();
+  else if (name === "meetings") renderMeetings();
   else if (name === "insights") renderInsights();
   else if (name === "graph") renderGraph();
 }
@@ -106,6 +107,63 @@ async function renderTasks() {
       <td>${esc(t.status)}</td></tr>`).join("")}
     </tbody></table>`;
 }
+
+// ---------- Meetings (raw transcript + what was extracted from it) ----------
+async function renderMeetings() {
+  const pane = $("#tab-meetings");
+  const rows = await api("/api/meetings");
+  if (!rows.length) return pane.innerHTML = `<div class="empty">No meetings yet. Ingest one on the left.</div>`;
+  pane.innerHTML = rows.map(m => `
+    <div class="mcard" data-id="${m.id}">
+      <div class="mcard-head">
+        <div>
+          <h3>${esc(m.title)}</h3>
+          <div class="mmeta">
+            <span class="badge team">${esc(m.source_type)}</span>
+            ${m.sentiment ? `<span class="badge team">sentiment: ${esc(m.sentiment)}</span>` : ""}
+            ${m.urgency ? `<span class="badge ${m.urgency === "high" ? "high" : m.urgency === "medium" ? "medium" : "low"}">urgency: ${esc(m.urgency)}</span>` : ""}
+            ${(m.participants || []).map(p => `<span class="badge team">${esc(p)}</span>`).join(" ")}
+          </div>
+        </div>
+        <button class="ghost mtoggle">View transcript</button>
+      </div>
+      <div class="mbody"></div>
+    </div>`).join("");
+}
+
+// Expand/collapse a meeting card -> fetch full detail incl. raw transcript.
+document.addEventListener("click", async (ev) => {
+  const btn = ev.target.closest(".mtoggle");
+  if (!btn) return;
+  const card = btn.closest(".mcard");
+  const body = card.querySelector(".mbody");
+  if (card.classList.contains("open")) {
+    card.classList.remove("open"); body.innerHTML = ""; btn.textContent = "View transcript";
+    return;
+  }
+  btn.textContent = "Hide"; card.classList.add("open");
+  body.innerHTML = `<span class="spinner"></span> Loading transcript...`;
+  try {
+    const d = await api(`/api/meetings/${card.dataset.id}`);
+    const items = (label, arr, fmt) => arr && arr.length
+      ? `<div class="section-title">${label} (${arr.length})</div>${arr.map(fmt).join("")}` : "";
+    body.innerHTML = `
+      <div class="split">
+        <div>
+          <div class="section-title">Raw ${esc(d.source_type)}</div>
+          <pre class="transcript">${esc(d.raw_text || "(no raw text stored)")}</pre>
+        </div>
+        <div>
+          ${d.summary ? `<div class="section-title">AI summary</div><div class="muted">${esc(d.summary)}</div>` : ""}
+          ${items("Escalations", d.escalations, e => `<div class="xitem">🚩 ${esc(e.description)} ${prioBadge(e.priority)} <span class="muted">sev ${e.severity_score}</span>${e.is_duplicate ? ' <span class="badge dup">duplicate</span>' : ""}</div>`)}
+          ${items("Tasks", d.tasks, t => `<div class="xitem">✅ ${esc(t.description)} ${prioBadge(t.priority)} <span class="muted">${esc(t.owner || "unassigned")}${t.deadline ? " · " + esc(t.deadline) : ""}</span></div>`)}
+          ${items("Risks", d.risks, r => `<div class="xitem">⚠️ ${esc(r.description)} ${prioBadge(r.priority)}</div>`)}
+          ${items("Blockers", d.blockers, b => `<div class="xitem">⛔ ${esc(b.description)}</div>`)}
+          ${items("Decisions", d.decisions, x => `<div class="xitem">📌 ${esc(x.description)}${x.rationale ? ` <span class="muted">— ${esc(x.rationale)}</span>` : ""}</div>`)}
+        </div>
+      </div>`;
+  } catch (e) { body.innerHTML = `<span style="color:var(--red)">${esc(e.message)}</span>`; }
+});
 
 // ---------- Insights ----------
 async function renderInsights() {

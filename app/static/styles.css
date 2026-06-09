@@ -131,6 +131,24 @@ tr:hover td { background: var(--panel-2); }
 .graph-scroll text { pointer-events: none; }
 .graph-scroll circle { cursor: pointer; }
 .graph-scroll circle:hover { stroke: #ffffff; stroke-width: 2; }
+/* ---------- meetings ---------- */
+.mcard { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
+.mcard-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.mcard h3 { margin: 0 0 6px; font-size: 15px; }
+.mmeta { display: flex; flex-wrap: wrap; gap: 6px; }
+button.ghost { background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; padding: 7px 12px; font: inherit; cursor: pointer; white-space: nowrap; }
+button.ghost:hover { border-color: var(--accent); }
+.mbody { margin-top: 0; }
+.mcard.open .mbody { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 1100px) { .split { grid-template-columns: 1fr; } }
+.transcript { white-space: pre-wrap; word-break: break-word; background: var(--panel-2);
+  border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 12.5px;
+  line-height: 1.55; color: #cdd6e6; max-height: 340px; overflow: auto; margin: 0; font-family: "Cascadia Code", Consolas, monospace; }
+.xitem { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.xitem:last-child { border-bottom: none; }
+
 .markdown { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 22px; line-height: 1.6; }
 .markdown h1, .markdown h2, .markdown h3 { color: var(--text); }
 .markdown code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }

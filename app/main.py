@@ -12,7 +12,7 @@ Routes:
 """
 from pathlib import Path
 
-from fastapi import FastAPI, Depends, UploadFile, File, Form
+from fastapi import FastAPI, Depends, UploadFile, File, Form, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -96,6 +96,35 @@ def api_meetings(db: Session = Depends(get_session)):
         "created_at": m.created_at,
         "participants": [p.display_name or p.name for p in m.participants],
     } for m in db.query(Meeting).order_by(Meeting.id.desc()).all()]
+
+
+@app.get("/api/meetings/{meeting_id}")
+def api_meeting_detail(meeting_id: int, db: Session = Depends(get_session)):
+    """Full meeting: the ORIGINAL raw transcript + everything extracted from it.
+
+    This is the 'see the messy input next to the structured output' view.
+    """
+    m = db.get(Meeting, meeting_id)
+    if m is None:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+    return {
+        "id": m.id, "title": m.title, "source_type": m.source_type,
+        "sentiment": m.sentiment, "urgency": m.urgency, "summary": m.summary,
+        "created_at": m.created_at, "raw_text": m.raw_text,
+        "participants": [p.display_name or p.name for p in m.participants],
+        "escalations": [{"description": e.description, "priority": e.priority,
+                         "severity_score": e.severity_score,
+                         "raised_by": e.raised_by.display_name if e.raised_by else None,
+                         "is_duplicate": bool(e.duplicate_of_id)} for e in m.escalations],
+        "tasks": [{"description": t.description, "priority": t.priority,
+                   "deadline": t.deadline,
+                   "owner": t.owner.display_name if t.owner else None} for t in m.tasks],
+        "risks": [{"description": r.description, "priority": r.priority,
+                   "severity_score": r.severity_score} for r in m.risks],
+        "blockers": [{"description": b.description, "status": b.status} for b in m.blockers],
+        "decisions": [{"description": d.description, "rationale": d.rationale}
+                      for d in m.decisions],
+    }
 
 
 @app.get("/api/escalations")

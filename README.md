@@ -98,6 +98,9 @@ Any OpenRouter model works — change one line in `.env`. Recommended defaults:
    sentiment) — matching the PDF's "Expected AI Output".
 3. **Escalations tab.** Show severity bars (the scoring engine) and the **duplicate**
    badge on the repeated Vendor API escalation across meetings.
+3b. **Meetings tab.** Click *View transcript* on any meeting to show the **original raw
+   text side-by-side with what the AI extracted** from it — the clearest way to prove the
+   "unstructured → structured" transformation.
 4. **Ask in English** (use the example chips):
    - "What are the current unresolved escalations?"
    - "Show all pending tasks assigned to Rahul." (note he appears across multiple meetings)
