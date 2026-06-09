@@ -99,3 +99,9 @@ class QueryResponse(BaseModel):
 class ReportRequest(BaseModel):
     scope: str = "org"          # "org" or "project"
     project: Optional[str] = None
+
+
+class ReportEmailRequest(BaseModel):
+    scope: str = "org"
+    project: Optional[str] = None
+    to: str                     # comma/semicolon-separated recipient emails

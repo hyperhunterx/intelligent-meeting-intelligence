@@ -23,9 +23,12 @@ from app.db import init_db, get_session
 from app.extraction import ingest_meeting
 from app.queries import compute_insights, nl_query, build_graph
 from app.reports import build_report
-from app.schemas import IngestRequest, QueryRequest, QueryResponse, ReportRequest
+from app.schemas import (
+    IngestRequest, QueryRequest, QueryResponse, ReportRequest, ReportEmailRequest,
+)
 from app.models import Meeting, Person, Project, Task, Escalation, Risk
 from app.files import extract_text
+from app.email_send import send_email
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -106,6 +109,16 @@ def api_graph(db: Session = Depends(get_session)):
 @app.post("/api/report")
 def api_report(req: ReportRequest, db: Session = Depends(get_session)):
     return {"report": build_report(db, scope=req.scope, project=req.project)}
+
+
+@app.post("/api/report/email")
+def api_report_email(req: ReportEmailRequest, db: Session = Depends(get_session)):
+    """Generate the action report AND email it to the given recipients."""
+    report = build_report(db, scope=req.scope, project=req.project)
+    recipients = [a.strip() for a in req.to.replace(";", ",").split(",") if a.strip()]
+    subject = "IMIES — Action Report" + (f": {req.project}" if req.project else "")
+    result = send_email(recipients, subject, report)
+    return {**result, "report": report}
 
 
 # ---------------- List feeds ----------------

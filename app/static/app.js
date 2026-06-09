@@ -476,8 +476,13 @@ $$("#exampleQs span").forEach(s => s.addEventListener("click", () => runQuery(s.
 
 // ---------- Report tab ----------
 $("#tab-report").innerHTML = `
-  <button id="reportBtn" class="primary">Generate leadership action report</button>
+  <div class="row" style="gap:10px;flex-wrap:wrap;align-items:center">
+    <button id="reportBtn" class="primary">Generate action report</button>
+    <input id="reportEmail" type="text" placeholder="email report to… (comma-separated)" style="flex:1;min-width:240px" />
+    <button id="reportEmailBtn" class="ghost">✉ Email it</button>
+  </div>
   <div id="reportOut" style="margin-top:14px"></div>`;
+
 document.addEventListener("click", async (e) => {
   if (e.target.id !== "reportBtn") return;
   $("#reportOut").innerHTML = `<span class="spinner"></span> Drafting report...`;
@@ -488,6 +493,25 @@ document.addEventListener("click", async (e) => {
     });
     $("#reportOut").innerHTML = `<div class="markdown">${mdToHtml(r.report)}</div>`;
   } catch (err) { $("#reportOut").innerHTML = `<span style="color:var(--red)">${esc(err.message)}</span>`; }
+});
+
+// Generate the report AND email it.
+document.addEventListener("click", async (e) => {
+  if (e.target.id !== "reportEmailBtn") return;
+  const to = $("#reportEmail").value.trim();
+  if (!to) return toast("Enter at least one recipient email.");
+  const btn = e.target; btn.disabled = true;
+  $("#reportOut").innerHTML = `<span class="spinner"></span> Generating &amp; emailing report...`;
+  try {
+    const r = await api("/api/report/email", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scope: "org", to }),
+    });
+    $("#reportOut").innerHTML = `<div class="markdown">${mdToHtml(r.report)}</div>`;
+    if (r.sent) toast("Report emailed to " + r.recipients.join(", ") + " ✓");
+    else toast("Email not sent: " + r.error);
+  } catch (err) { $("#reportOut").innerHTML = `<span style="color:var(--red)">${esc(err.message)}</span>`; }
+  finally { btn.disabled = false; }
 });
 
 // Tiny markdown -> HTML (headings, bold, lists).

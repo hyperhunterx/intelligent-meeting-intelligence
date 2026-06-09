@@ -130,7 +130,8 @@ Any OpenRouter model works — change one line in `.env`. Recommended defaults:
 - ✅ **Risk severity scoring & prioritization** (`enrich.severity_score`)
 - ✅ **Duplicate escalation detection across meetings** (`enrich.is_duplicate_escalation`)
 - ✅ **Real-time leadership dashboard** (the SPA)
-- ✅ **Auto-generated follow-up / action report** (`reports.build_report`)
+- ✅ **Auto-generated follow-up emails / action report** — `reports.build_report` writes
+  the report; the Report tab can **email it** via SMTP (`email_send.send_email`, configured in `.env`)
 - ✅ **Sentiment & urgency analysis** (per meeting, from extraction)
 - ✅ **Voice-based ingestion** — click 🎤 Speak and dictate the meeting straight into the
   transcription box (browser-native Web Speech API; works in Chrome/Edge, no key needed)

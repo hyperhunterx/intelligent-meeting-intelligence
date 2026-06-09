@@ -17,6 +17,14 @@ class Settings(BaseSettings):
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
     DB_PATH: str = "imies.db"
 
+    # Email (SMTP) — used to send the auto-generated action report.
+    # For Gmail: host smtp.gmail.com, port 587, and an APP PASSWORD (not your login).
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""        # your email address
+    SMTP_PASSWORD: str = ""    # app password
+    SMTP_FROM: str = ""        # defaults to SMTP_USER if blank
+
 
 # Single shared instance imported everywhere: `from app.config import settings`.
 settings = Settings()
