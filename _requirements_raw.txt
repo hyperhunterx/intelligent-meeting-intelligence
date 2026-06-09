@@ -1,0 +1,109 @@
+GenAI Hackathon 
+Intelligent Meeting Intelligence & Escalation Tracking System 
+Background 
+Modern organizations operate through a constant stream of meetings — spanning engineering, 
+product, operations, support, HR, and leadership. Yet the valuable intelligence embedded 
+within these meetings rarely survives in an actionable form. 
+Critical information — escalations, blockers, project risks, ownership transfers, action items, 
+deadlines, and key decisions — is routinely buried inside lengthy transcripts, loosely formatted 
+summaries, or informal chat threads. By the time these insights are needed, they are difficult to 
+find, impossible to query, and entirely disconnected from related context. 
+The consequences are significant: 
+• Escalations go untracked until they become crises 
+• Project risks accumulate invisibly across teams 
+• Accountability is lost when ownership is undocumented 
+• Historical context is inaccessible when decisions need revisiting 
+• Leadership lacks real-time visibility into organizational health 
+Generative AI now makes it possible to change this — by transforming unstructured meeting 
+content into structured, searchable, and interconnected organizational knowledge in real time. 
+Problem Statement 
+Design and build an AI-powered Meeting Intelligence System that ingests raw meeting content 
+— summaries, transcripts, or discussions — and automatically extracts, structures, and 
+interconnects the organizational intelligence hidden within. where the endpoint will be created 
+to provide the example meeting conversation as an input 
+The system must intelligently surface: 
+• Projects & initiatives under discussion 
+• Action items and task ownership 
+• Escalations, blockers, and unresolved issues 
+• Risks, dependencies, and cross-team impacts 
+• Stakeholders, owners, and accountable parties 
+• Timelines, deadlines, and commitments 
+• Priority levels and urgency signals 
+• Key decisions and their rationale 
+• Follow-up actions and next steps 
+Once extracted, this intelligence must be: 
+• Stored in a structured, queryable format 
+• Contextually linked — connecting people, tasks, risks, and projects 
+• Accessible through natural language queries or API interfaces 
+• Presented in a way that drives real organizational decisions 
+Objective 
+Convert unstructured meeting discussions into actionable business intelligence using Generative 
+AI — enabling teams to query their own organizational history, track accountability, and 
+proactively manage risks without manual effort. 
+Illustrative Scenario 
+Input — Raw Meeting Summary: 
+“The payment integration is delayed because the Vendor API is unstable. Rahul will coordinate 
+with the backend team before Friday. If this issue continues, it may impact the Phase-2 release. 
+Priya escalated the concern to leadership.” 
+Expected AI Output: 
+• Project: Payment Integration 
+• Blocker: Vendor API instability 
+• Owner: Rahul 
+• Deadline: Friday 
+• Risk: Delay in Phase-2 release 
+• Escalation Raised By: Priya 
+• Teams Involved: Backend Team 
+• Priority: High 
+Core Capabilities to Build 
+1. Meeting Input Processing 
+The system should accept meeting content in multiple forms: 
+• Structured or free-form meeting summaries 
+• Raw text transcripts 
+• Uploaded document files 
+2. Intelligent Information Extraction 
+Using AI and NLP , the system should reliably identify and extract: 
+• Tasks and action items 
+• Escalations and unresolved blockers 
+• Risks and inter-team dependencies 
+• Key decisions and open questions 
+• Deadlines and time-bound commitments 
+• Ownership and stakeholder mapping 
+3. Structured Knowledge Storage 
+Extracted information must be stored in a structured, queryable format. Participants may use 
+relational databases (SQL), document stores (NoSQL), or graph databases such as Neo4j to 
+model relationships like: 
+• Employee → Assigned_To → Task 
+• Project → Has_Blocker → Issue 
+• Escalation → Raised_By → Person 
+4. Conversational Querying 
+Users should be able to ask natural language questions and receive precise, context-aware 
+answers. Examples: 
+• “What are the current unresolved escalations?” 
+• “Which projects are at risk this week?” 
+• “Show all pending tasks assigned to Rahul.” 
+• “Which meetings discussed Vendor API issues?” 
+• “List all high-priority blockers across teams.” 
+5. Organizational Insight Generation 
+Beyond individual queries, the platform should surface meaningful patterns across meetings: 
+• Escalation trends over time 
+• Project health and risk status 
+• Pending action items and accountability gaps 
+• Team workload distribution 
+• Dependency and risk mapping 
+Bonus Opportunities 
+Teams that complete the core system may explore advanced capabilities to differentiate their 
+solution: 
+• Multi-agent orchestration for parallel extraction workflows 
+• Semantic search using vector embeddings (ChromaDB, FAISS) 
+• Risk severity scoring and prioritization engine 
+• Duplicate escalation detection across meetings 
+• Sentiment analysis on meeting tone and urgency 
+• Auto-generated follow-up emails or meeting action reports 
+• Slack or Microsoft Teams notification integration 
+• Real-time dashboards for leadership visibility 
+• Voice-based meeting ingestion via speech-to-text 
+Expected Outcome 
+The final solution should demonstrate how Generative AI can transform raw, 
+unstructured meeting discussions into a structured, searchable, and interconnected 
+organizational intelligence system — one that actively tracks tasks, escalations, risks, 
+ownership, and operational health across an entire organization. 
