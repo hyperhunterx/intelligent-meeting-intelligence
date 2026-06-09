@@ -128,9 +128,20 @@ tr:hover td { background: var(--panel-2); }
 
 .graph-scroll { height: 560px; overflow: auto; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); }
 .graph-scroll svg { display: block; }
-.graph-scroll text { pointer-events: none; }
 .graph-scroll circle { cursor: pointer; }
-.graph-scroll circle:hover { stroke: #ffffff; stroke-width: 2; }
+
+/* edges */
+.gedge { stroke: #2a3550; stroke-width: 1.1; opacity: .8;
+  transition: stroke .15s ease, stroke-width .15s ease, opacity .15s ease; }
+.gedge.hl { stroke: var(--accent); stroke-width: 2.4; opacity: 1; }
+.gedge.dim { opacity: .07; }
+
+/* nodes */
+.gnode { cursor: pointer; transition: opacity .15s ease; }
+.gnode text { transition: fill .15s ease; }
+.gnode.dim { opacity: .22; }
+.gnode.hl circle { stroke: #ffffff; stroke-width: 2; }
+.gnode.hl text { fill: #ffffff; }
 /* ---------- meetings ---------- */
 .mcard { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
 .mcard-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }

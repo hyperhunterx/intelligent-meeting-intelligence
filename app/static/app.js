@@ -230,12 +230,13 @@ async function renderGraph() {
   place(projects, colX.project);
 
   // Smooth horizontal bezier edges read cleaner than straight crossing lines.
+  // data-source/data-target let us highlight an edge when either endpoint is hovered.
   const edges = g.edges.map(e => {
     const a = pos[e.source], b = pos[e.target];
     if (!a || !b) return "";
     const mx = (a.x + b.x) / 2;
-    return `<path d="M ${a.x} ${a.y} C ${mx} ${a.y}, ${mx} ${b.y}, ${b.x} ${b.y}"
-            fill="none" stroke="#2a3550" stroke-width="1.1" opacity="0.8"/>`;
+    return `<path class="gedge" data-source="${esc(e.source)}" data-target="${esc(e.target)}"
+            d="M ${a.x} ${a.y} C ${mx} ${a.y}, ${mx} ${b.y}, ${b.x} ${b.y}" fill="none"/>`;
   }).join("");
 
   // anchor: "left" => text to the left of node; "right" => to the right; "mid" => above.
@@ -246,7 +247,7 @@ async function renderGraph() {
     else if (anchor === "right") { tx = p.x + 13; ta = "start"; }
     else { ty = p.y - 12; }   // activity labels sit just above their dot
     const max = anchor === "mid" ? 26 : 20;
-    return `<g>
+    return `<g class="gnode" data-id="${esc(n.id)}">
       <title>${esc(n.label)}</title>
       <circle cx="${p.x}" cy="${p.y}" r="7" fill="${color[n.type] || "#888"}"/>
       <text x="${tx}" y="${ty}" fill="#c7d0e0" font-size="11" text-anchor="${ta}">${esc(trunc(n.label, max))}</text>
@@ -270,9 +271,38 @@ async function renderGraph() {
       <span style="color:#35d07f">●</span> task &nbsp;
       <span style="color:#ff5c6c">●</span> escalation &nbsp;
       <span style="color:#7c5cff">●</span> project
-      <span style="float:right;font-size:12px">hover a node for its full label</span>
+      <span style="float:right;font-size:12px">hover a node to trace its connections</span>
     </div>
     <div class="graph-scroll"><svg width="${W}" height="${H}">${headers}${edges}${nodesSvg}</svg></div>`;
+
+  // ---- hover interaction: highlight a node's edges + neighbours, dim the rest ----
+  const svg = pane.querySelector("svg");
+  const allEdges = [...svg.querySelectorAll(".gedge")];
+  const allNodes = [...svg.querySelectorAll(".gnode")];
+
+  function focus(id) {
+    const neighbours = new Set([id]);
+    allEdges.forEach(ed => {
+      if (ed.dataset.source === id || ed.dataset.target === id) {
+        ed.classList.add("hl");
+        neighbours.add(ed.dataset.source);
+        neighbours.add(ed.dataset.target);
+      } else {
+        ed.classList.add("dim");
+      }
+    });
+    allNodes.forEach(nd => {
+      nd.classList.add(neighbours.has(nd.dataset.id) ? "hl" : "dim");
+    });
+  }
+  function clearFocus() {
+    allEdges.forEach(ed => ed.classList.remove("hl", "dim"));
+    allNodes.forEach(nd => nd.classList.remove("hl", "dim"));
+  }
+  allNodes.forEach(nd => {
+    nd.addEventListener("mouseenter", () => focus(nd.dataset.id));
+    nd.addEventListener("mouseleave", clearFocus);
+  });
 }
 
 // ---------- Ingest ----------
