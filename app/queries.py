@@ -109,71 +109,136 @@ def compute_insights(session: Session) -> dict:
 # ---------------- Natural-language query (grounded) ----------------
 
 # Common stop words we don't want to match rows on.
-_STOP = set("the a an of to in on for is are what which show list all me my our "
-            "across this week current who whom whose and or with at by".split())
+# Words that map a question to an ENTITY TYPE we should pull wholesale.
+_TYPE_WORDS = {
+    "escalation": "escalation", "escalations": "escalation", "escalated": "escalation",
+    "task": "task", "tasks": "task", "todo": "task", "todos": "task",
+    "action": "task", "items": "task", "assignment": "task", "assignments": "task",
+    "risk": "risk", "risks": "risk",
+    "blocker": "blocker", "blockers": "blocker", "blocked": "blocker",
+    "decision": "decision", "decisions": "decision", "decided": "decision",
+}
+# Words that mean "only OPEN items".
+_OPEN_WORDS = {"open", "unresolved", "pending", "outstanding", "current",
+               "active", "ongoing"}
+# Noise we strip before keyword matching (so "projects at risk this week" -> []).
+_STOP = set((
+    "the a an of to in on for is are was were what which show list all give tell find get "
+    "me my our your their across this that these those week weeks who whom whose and or "
+    "with at by have has had please can you do does any currently now also there here "
+    "project projects projcet meeting meetings discussed discuss issue issues team teams "
+    "high low medium priority status about into from over under between still yet "
+).split()) | set(_TYPE_WORDS) | _OPEN_WORDS
 
 
 def _keywords(question: str) -> list[str]:
+    """Specific content terms (names, 'vendor', 'api') after stripping noise + type/status words."""
     words = [normalize_name(w.strip(".,?!\"'")) for w in question.split()]
     return [w for w in words if w and w not in _STOP and len(w) > 2]
 
 
 def _row_matches(text_fields: list[str | None], keywords: list[str]) -> bool:
     blob = " ".join(normalize_name(f) for f in text_fields if f)
-    return any(k in blob for k in keywords) if keywords else True
+    return any(k in blob for k in keywords)
 
 
 def nl_query(session: Session, question: str) -> dict:
-    """Answer an English question, grounded in retrieved DB rows."""
+    """Answer an English question, grounded in retrieved DB rows.
+
+    Retrieval is TYPE-AWARE:
+      - if the question names an entity type ("escalations", "tasks", "blockers"),
+        we pull rows of that type wholesale (optionally filtered to open + keywords);
+      - otherwise we pull any row whose text matches the specific keywords;
+      - if nothing is specified at all, we fall back to open escalations + tasks.
+    """
+    qnorm = normalize_name(question)
+    qwords = set(qnorm.replace("?", " ").replace(".", " ").split())
+    wanted = {_TYPE_WORDS[w] for w in qwords if w in _TYPE_WORDS}
+    open_only = bool(qwords & _OPEN_WORDS)
     kw = _keywords(question)
+
     rows: list[dict] = []
     sources: set[str] = set()
 
+    def want(rtype: str, status: str | None, fields: list[str | None]) -> bool:
+        """Decide if a row should be retrieved."""
+        if open_only and status is not None and status != "open":
+            return False
+        type_hit = rtype in wanted
+        kw_hit = _row_matches(fields, kw) if kw else False
+        if wanted:
+            # A type was requested: include rows of that type (further narrowed by
+            # keywords if any were given), plus any strong keyword hit elsewhere.
+            if type_hit:
+                return _row_matches(fields, kw) if kw else True
+            return kw_hit
+        # No explicit type: pure keyword retrieval.
+        return kw_hit
+
+    def add_source(meeting_title):
+        if meeting_title:
+            sources.add(meeting_title)
+
     for e in session.query(Escalation).all():
+        mt = e.meeting.title if e.meeting else None
         fields = [e.description, e.priority, e.status,
                   e.project.display_name if e.project else None,
-                  e.raised_by.display_name if e.raised_by else None,
-                  e.meeting.title if e.meeting else None]
-        if _row_matches(fields, kw):
+                  e.raised_by.display_name if e.raised_by else None, mt]
+        if want("escalation", e.status, fields):
             rows.append({"type": "escalation", "description": e.description,
                          "raised_by": e.raised_by.display_name if e.raised_by else None,
                          "project": e.project.display_name if e.project else None,
                          "priority": e.priority, "severity": e.severity_score,
-                         "status": e.status,
-                         "meeting": e.meeting.title if e.meeting else None})
-            if e.meeting:
-                sources.add(e.meeting.title)
+                         "status": e.status, "is_duplicate": bool(e.duplicate_of_id),
+                         "meeting": mt})
+            add_source(mt)
 
     for t in session.query(Task).all():
+        mt = t.meeting.title if t.meeting else None
         fields = [t.description, t.priority, t.status, t.deadline,
                   t.project.display_name if t.project else None,
-                  t.owner.display_name if t.owner else None,
-                  t.meeting.title if t.meeting else None]
-        if _row_matches(fields, kw):
+                  t.owner.display_name if t.owner else None, mt]
+        if want("task", t.status, fields):
             rows.append({"type": "task", "description": t.description,
                          "owner": t.owner.display_name if t.owner else None,
                          "project": t.project.display_name if t.project else None,
                          "deadline": t.deadline, "priority": t.priority,
-                         "status": t.status,
-                         "meeting": t.meeting.title if t.meeting else None})
-            if t.meeting:
-                sources.add(t.meeting.title)
+                         "status": t.status, "meeting": mt})
+            add_source(mt)
 
     for r in session.query(Risk).all():
+        mt = r.meeting.title if r.meeting else None
         fields = [r.description, r.impact, r.priority,
-                  r.project.display_name if r.project else None,
-                  r.meeting.title if r.meeting else None]
-        if _row_matches(fields, kw):
+                  r.project.display_name if r.project else None, mt]
+        if want("risk", None, fields):
             rows.append({"type": "risk", "description": r.description,
                          "project": r.project.display_name if r.project else None,
                          "impact": r.impact, "priority": r.priority,
-                         "severity": r.severity_score,
-                         "meeting": r.meeting.title if r.meeting else None})
-            if r.meeting:
-                sources.add(r.meeting.title)
+                         "severity": r.severity_score, "meeting": mt})
+            add_source(mt)
 
-    # Cap context size so we don't blow the prompt on big DBs.
-    rows = rows[:40]
+    for b in session.query(Blocker).all():
+        mt = b.meeting.title if b.meeting else None
+        fields = [b.description, b.status,
+                  b.project.display_name if b.project else None, mt]
+        if want("blocker", b.status, fields):
+            rows.append({"type": "blocker", "description": b.description,
+                         "project": b.project.display_name if b.project else None,
+                         "status": b.status, "meeting": mt})
+            add_source(mt)
+
+    # Fallback: nothing specified -> show the org's open hot-list.
+    if not rows and not wanted and not kw:
+        for e in session.query(Escalation).filter(Escalation.status == "open").all():
+            mt = e.meeting.title if e.meeting else None
+            rows.append({"type": "escalation", "description": e.description,
+                         "raised_by": e.raised_by.display_name if e.raised_by else None,
+                         "project": e.project.display_name if e.project else None,
+                         "priority": e.priority, "severity": e.severity_score,
+                         "status": e.status, "meeting": mt})
+            add_source(mt)
+
+    rows = rows[:40]  # cap context size
     if not rows:
         return {"answer": "I couldn't find any records matching that question.",
                 "sources": []}

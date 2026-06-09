@@ -6,3 +6,4 @@ __pycache__/
 venv/
 .venv/
 _requirements_raw.txt
+.playwright-mcp/
