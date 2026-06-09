@@ -41,7 +41,12 @@ _EXTRACT_SYSTEM = (
     "people, action items with owners and deadlines, escalations and who raised them, "
     "risks, blockers, key decisions, OPEN QUESTIONS (unresolved questions raised but not "
     "answered), and FOLLOW-UPS (next steps / follow-up actions). Infer priority and urgency from tone. "
-    "Use the person's name as written. Only include items actually supported by the text "
+    "Use the person's name as written. "
+    "TEAMS: whenever a team, department, or group is mentioned in connection with a task or "
+    "escalation (e.g. 'backend team', 'QA', 'design', 'platform team', 'leadership'), record "
+    "its proper name in that item's \"teams\" array (e.g. \"Backend Team\") — do not leave it "
+    "only in the prose. "
+    "Only include items actually supported by the text "
     "(do not invent). Respond with ONLY a JSON object matching this shape:\n"
     + _EXTRACTION_SHAPE
 )
