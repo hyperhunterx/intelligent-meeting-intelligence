@@ -1,0 +1,27 @@
+[
+  {
+    "title": "Payments Sync — Week 23",
+    "source_type": "summary",
+    "text": "The payment integration is delayed because the Vendor API is unstable. Rahul will coordinate with the backend team before Friday to add retries and a fallback. If this issue continues, it may impact the Phase-2 release. Priya escalated the concern to leadership as high priority. We also decided to cap vendor timeouts at 3 seconds to protect checkout."
+  },
+  {
+    "title": "Platform Reliability Standup",
+    "source_type": "transcript",
+    "text": "CI has been flaky all week, blocking merges for the Platform team. Aditya owns fixing the test runner by next Tuesday. There is a medium risk that the observability migration slips if the on-call load stays high. Meera raised that the logging pipeline drops events under load — she wants this tracked. No leadership escalation yet, but the team mood is tense and people are overloaded."
+  },
+  {
+    "title": "Phase-2 Release Review",
+    "source_type": "summary",
+    "text": "Leadership reviewed Phase-2 readiness. The Vendor API instability on Payment Integration is still unresolved and was raised again by Priya — it remains the top blocker and is now critical. Rahul reported the backend retries are half-done. Decision: we will not ship Phase-2 until the payment path is stable. The mobile team has a dependency on the new checkout API and is at risk of waiting. Deadline for a go/no-go is next Monday."
+  },
+  {
+    "title": "Customer Support Escalations Review",
+    "source_type": "summary",
+    "text": "Support is seeing a spike in refund failures. Sneha will investigate whether this is linked to the payment integration issues, due Thursday. There is a high-priority blocker: the refunds dashboard shows stale data. Kiran from the data team is a stakeholder. The team decided to add an alert when refund failure rate exceeds 2 percent. Sentiment was frustrated due to repeat customer complaints."
+  },
+  {
+    "title": "HR & Hiring Operations",
+    "source_type": "summary",
+    "text": "The hiring pipeline for backend engineers is slow, which indirectly risks the Payment Integration timeline because Rahul's team is understaffed. Neha owns accelerating two senior backend offers by end of month. Low urgency overall but flagged as a dependency for engineering capacity. Decision: prioritize backend roles over generalist roles this quarter."
+  }
+]
