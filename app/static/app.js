@@ -141,39 +141,80 @@ async function renderInsights() {
       : '<div class="muted">No cross-team dependencies recorded.</div>'}`;
 }
 
-// ---------- Graph (simple circular layout SVG) ----------
+// ---------- Graph (3-column layered layout: People -> Activity -> Projects) ----------
 async function renderGraph() {
   const pane = $("#tab-graph");
   const g = await api("/api/graph");
   if (!g.nodes.length) return pane.innerHTML = `<div class="empty">No relationships yet.</div>`;
-  const W = pane.clientWidth || 900, H = 560, cx = W / 2, cy = H / 2;
-  const R = Math.min(W, H) / 2 - 70;
-  const pos = {};
-  g.nodes.forEach((n, i) => {
-    const a = (i / g.nodes.length) * Math.PI * 2;
-    pos[n.id] = { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) };
-  });
+
   const color = { person: "#5b9dff", project: "#7c5cff", task: "#35d07f", escalation: "#ff5c6c" };
+  const trunc = (s, n) => (s && s.length > n) ? s.slice(0, n - 1) + "…" : (s || "");
+
+  // Three columns so labels never stack on top of each other.
+  const people = g.nodes.filter(n => n.type === "person");
+  const activity = g.nodes.filter(n => n.type === "task" || n.type === "escalation");
+  const projects = g.nodes.filter(n => n.type === "project");
+
+  const W = Math.max(820, (pane.clientWidth || 900));
+  const gap = 42, padY = 44;
+  const rows = Math.max(people.length, activity.length, projects.length, 1);
+  const H = Math.max(420, rows * gap + padY * 2);
+
+  // Column x-positions. People labels go left, project labels go right, activity centered.
+  const colX = { person: 150, activity: Math.round(W / 2), project: W - 150 };
+  const pos = {};
+  const place = (arr, x) => {
+    const startY = (H - (arr.length - 1) * gap) / 2;
+    arr.forEach((n, i) => { pos[n.id] = { x, y: startY + i * gap, node: n }; });
+  };
+  place(people, colX.person);
+  place(activity, colX.activity);
+  place(projects, colX.project);
+
+  // Smooth horizontal bezier edges read cleaner than straight crossing lines.
   const edges = g.edges.map(e => {
     const a = pos[e.source], b = pos[e.target];
     if (!a || !b) return "";
-    return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#2b3650" stroke-width="1.2"/>`;
+    const mx = (a.x + b.x) / 2;
+    return `<path d="M ${a.x} ${a.y} C ${mx} ${a.y}, ${mx} ${b.y}, ${b.x} ${b.y}"
+            fill="none" stroke="#2a3550" stroke-width="1.1" opacity="0.8"/>`;
   }).join("");
-  const nodes = g.nodes.map(n => {
-    const p = pos[n.id];
+
+  // anchor: "left" => text to the left of node; "right" => to the right; "mid" => above.
+  const drawNode = (p, anchor) => {
+    const n = p.node;
+    let tx = p.x, ta = "middle", ty = p.y + 4;
+    if (anchor === "left") { tx = p.x - 13; ta = "end"; }
+    else if (anchor === "right") { tx = p.x + 13; ta = "start"; }
+    else { ty = p.y - 12; }   // activity labels sit just above their dot
+    const max = anchor === "mid" ? 26 : 20;
     return `<g>
-      <circle cx="${p.x}" cy="${p.y}" r="8" fill="${color[n.type] || "#888"}"/>
-      <text x="${p.x + 11}" y="${p.y + 4}" fill="#cdd6e6" font-size="11">${esc(n.label)}</text>
+      <title>${esc(n.label)}</title>
+      <circle cx="${p.x}" cy="${p.y}" r="7" fill="${color[n.type] || "#888"}"/>
+      <text x="${tx}" y="${ty}" fill="#c7d0e0" font-size="11" text-anchor="${ta}">${esc(trunc(n.label, max))}</text>
     </g>`;
-  }).join("");
+  };
+
+  const nodesSvg =
+    people.map(n => drawNode(pos[n.id], "left")).join("") +
+    activity.map(n => drawNode(pos[n.id], "mid")).join("") +
+    projects.map(n => drawNode(pos[n.id], "right")).join("");
+
+  // Column headers.
+  const headers = `
+    <text x="${colX.person}" y="22" fill="#8a97ad" font-size="11" text-anchor="middle" letter-spacing="1">PEOPLE</text>
+    <text x="${colX.activity}" y="22" fill="#8a97ad" font-size="11" text-anchor="middle" letter-spacing="1">ACTIVITY</text>
+    <text x="${colX.project}" y="22" fill="#8a97ad" font-size="11" text-anchor="middle" letter-spacing="1">PROJECTS</text>`;
+
   pane.innerHTML = `
     <div class="muted" style="margin-bottom:8px">
-      <span style="color:#5b9dff">●</span> person
+      <span style="color:#5b9dff">●</span> person &nbsp;
+      <span style="color:#35d07f">●</span> task &nbsp;
+      <span style="color:#ff5c6c">●</span> escalation &nbsp;
       <span style="color:#7c5cff">●</span> project
-      <span style="color:#35d07f">●</span> task
-      <span style="color:#ff5c6c">●</span> escalation
+      <span style="float:right;font-size:12px">hover a node for its full label</span>
     </div>
-    <svg id="graph" viewBox="0 0 ${W} ${H}">${edges}${nodes}</svg>`;
+    <div class="graph-scroll"><svg width="${W}" height="${H}">${headers}${edges}${nodesSvg}</svg></div>`;
 }
 
 // ---------- Ingest ----------
