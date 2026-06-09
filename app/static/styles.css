@@ -142,6 +142,9 @@ tr:hover td { background: var(--panel-2); }
 .gnode.dim { opacity: .22; }
 .gnode.hl circle { stroke: #ffffff; stroke-width: 2; }
 .gnode.hl text { fill: #ffffff; }
+/* the pinned node gets a glowing accent ring */
+.gnode.pinned circle { stroke: var(--accent); stroke-width: 3; filter: drop-shadow(0 0 5px var(--accent)); }
+.gnode.pinned text { fill: var(--accent); font-weight: 700; }
 /* ---------- meetings ---------- */
 .mcard { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
 .mcard-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }

@@ -271,16 +271,24 @@ async function renderGraph() {
       <span style="color:#35d07f">●</span> task &nbsp;
       <span style="color:#ff5c6c">●</span> escalation &nbsp;
       <span style="color:#7c5cff">●</span> project
-      <span style="float:right;font-size:12px">hover a node to trace its connections</span>
+      <span class="ghint" style="float:right;font-size:12px">hover to trace · click to pin a node's connections</span>
     </div>
     <div class="graph-scroll"><svg width="${W}" height="${H}">${headers}${edges}${nodesSvg}</svg></div>`;
 
-  // ---- hover interaction: highlight a node's edges + neighbours, dim the rest ----
+  // ---- interaction: hover previews connections; click PINS them ----
   const svg = pane.querySelector("svg");
+  const hint = pane.querySelector(".ghint");
   const allEdges = [...svg.querySelectorAll(".gedge")];
   const allNodes = [...svg.querySelectorAll(".gnode")];
+  let pinnedId = null;   // the currently pinned node, or null
 
-  function focus(id) {
+  const labelOf = (id) => {
+    const n = allNodes.find(nd => nd.dataset.id === id);
+    return n ? n.querySelector("title").textContent : id;
+  };
+
+  function applyFocus(id) {
+    clearClasses();
     const neighbours = new Set([id]);
     allEdges.forEach(ed => {
       if (ed.dataset.source === id || ed.dataset.target === id) {
@@ -291,18 +299,39 @@ async function renderGraph() {
         ed.classList.add("dim");
       }
     });
-    allNodes.forEach(nd => {
-      nd.classList.add(neighbours.has(nd.dataset.id) ? "hl" : "dim");
-    });
+    allNodes.forEach(nd => nd.classList.add(neighbours.has(nd.dataset.id) ? "hl" : "dim"));
+    if (pinnedId) {
+      const pn = allNodes.find(nd => nd.dataset.id === pinnedId);
+      if (pn) pn.classList.add("pinned");
+    }
   }
-  function clearFocus() {
+  function clearClasses() {
     allEdges.forEach(ed => ed.classList.remove("hl", "dim"));
-    allNodes.forEach(nd => nd.classList.remove("hl", "dim"));
+    allNodes.forEach(nd => nd.classList.remove("hl", "dim", "pinned"));
   }
+  // Restore to whatever should be showing when the mouse isn't over a node.
+  function rest() {
+    if (pinnedId) { applyFocus(pinnedId); }
+    else { clearClasses(); hint.textContent = "hover to trace · click to pin a node's connections"; }
+  }
+
   allNodes.forEach(nd => {
-    nd.addEventListener("mouseenter", () => focus(nd.dataset.id));
-    nd.addEventListener("mouseleave", clearFocus);
+    nd.addEventListener("mouseenter", () => applyFocus(nd.dataset.id));
+    nd.addEventListener("mouseleave", rest);
+    nd.addEventListener("click", (ev) => {
+      ev.stopPropagation();              // don't let the svg-background handler unpin
+      const id = nd.dataset.id;
+      pinnedId = (pinnedId === id) ? null : id;   // toggle
+      if (pinnedId) {
+        applyFocus(pinnedId);
+        hint.innerHTML = `📌 pinned: <b>${esc(labelOf(pinnedId))}</b> — click it again or click empty space to unpin`;
+      } else {
+        rest();
+      }
+    });
   });
+  // Clicking empty graph space clears the pin.
+  svg.addEventListener("click", () => { pinnedId = null; rest(); });
 }
 
 // ---------- Ingest ----------
