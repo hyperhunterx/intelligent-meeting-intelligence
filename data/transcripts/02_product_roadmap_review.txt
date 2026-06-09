@@ -1,0 +1,20 @@
+Product Roadmap Review - Q3 - 9 June 2026
+Attendees: Riya (Head of Product), Sameer (PM Growth), Lucia (PM Core), Designer: Owen, Eng partner: Arjun
+
+Riya: We're prioritizing the Q3 roadmap today. The big bet is the AI Search feature for the customer portal.
+
+Sameer: Growth wants the new onboarding flow shipped first - data shows we lose 40 percent of users at signup. I think onboarding is higher priority than AI Search this quarter.
+
+Lucia: Core can't support both at once. We have a dependency: AI Search needs the search indexing service from the platform team, and that's not ready. So there's a real risk AI Search slips.
+
+Riya: Decision: onboarding flow is the Q3 priority, AI Search moves to early Q4. Sameer, you own the onboarding launch, target end of August.
+
+Sameer: Got it, I'll own onboarding with an end-of-August target.
+
+Owen: Design needs a decision on the onboarding visual style - do we go with the guided wizard or a single-page form? That's an open question blocking my work.
+
+Riya: Let's resolve the wizard-versus-single-page question by next Tuesday. Owen, prepare both mockups.
+
+Lucia: I want to flag an escalation - the analytics events are unreliable, so we can't measure activation properly. I'm raising this to leadership because every product decision depends on trustworthy data.
+
+Riya: Noted and escalated. Follow-ups: Lucia will document the analytics gaps by Thursday, and I'll align with the platform team on the search indexing timeline as a next step. Good energy today, optimistic overall.

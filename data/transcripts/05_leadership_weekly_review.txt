@@ -1,0 +1,22 @@
+Leadership Weekly Review - 9 June 2026
+Attendees: Karthik (Director Eng), Riya (Head of Product), Deepa (Support Lead), Priyanka (Head of People), CEO: Meera
+
+Meera: Let's get a cross-company view. I want the top risks and escalations across teams.
+
+Karthik: Engineering's biggest risk is the Kubernetes migration - the staging cluster is unstable and it could slip past June 30. We've escalated the cluster issue to the cloud vendor.
+
+Deepa: Support's critical escalation is the silent refund failures. Two enterprise accounts are threatening to churn. This is our highest-priority customer risk this week.
+
+Riya: Product's blocker is unreliable analytics data, which is escalated. We've decided onboarding is the Q3 priority over AI Search.
+
+Priyanka: People's escalation is the engineering and SRE staffing gap, which is directly slowing the migration. We've decided to prioritize those roles and raise comp bands.
+
+Meera: So the common thread is the payment platform and staffing. Decision: the payment gateway stability is now company priority number one - all hands until refunds and checkout are stable. Karthik, you own a unified payment-stability task force.
+
+Karthik: Understood, I own the payment-stability task force, kickoff tomorrow.
+
+Meera: Open question - do we communicate the refund issues to all customers proactively, or only the affected ones? That's a brand decision we need to make.
+
+Riya: There's also an open question on whether we pull engineers off the onboarding flow to help with payments. That's a real tradeoff.
+
+Meera: Let's decide the customer-communication approach by Wednesday. Follow-ups: each lead will send me a one-line status by end of day, and I'll brief the board on the payment situation as a next step. The mood is serious but aligned. Thank you all.

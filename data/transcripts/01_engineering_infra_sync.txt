@@ -1,0 +1,22 @@
+Engineering Infrastructure Sync - 9 June 2026
+Attendees: Arjun (Platform Lead), Nisha (SRE), Tom (Backend), Wei (DevOps), Director: Karthik
+
+Arjun: Let's start with the Kubernetes migration. Where are we?
+
+Wei: We've moved about 60 percent of services. But there's a serious blocker - the staging cluster keeps running out of memory and crashing during load tests. It's blocking the final cutover.
+
+Nisha: I agree, this is the top issue. If we don't fix the memory limits this week, the migration slips past the June 30 deadline. I'll own tuning the resource quotas and aim to have it stable by June 16.
+
+Karthik: This is critical. I'm escalating the cluster instability to the cloud vendor's support team directly, because we're paying for premium support and not getting it.
+
+Tom: There's also a risk on the database side. We're on a single primary with no read replica. If it fails during migration, we have no failover. That's a high risk to availability.
+
+Arjun: Good point. Decision: we will provision a read replica before the cutover, no exceptions. Tom, can you own that?
+
+Tom: Yes, I'll set up the read replica by June 18.
+
+Wei: One open question - do we cut over all regions at once, or region by region? We haven't decided the rollout strategy.
+
+Arjun: Let's leave that as an open item to decide next sync. For follow-ups: Nisha will share the load-test results dashboard with the team by Friday, and I'll write the rollback runbook as a next step.
+
+Karthik: The hiring freeze is also hurting us - we're short two SREs, which is a dependency risk if the migration drags on. Overall the mood is stressed but the team is focused. Let's reconvene Thursday.

@@ -1,0 +1,20 @@
+HR and Hiring Operations Sync - 9 June 2026
+Attendees: Priyanka (Head of People), Raj (Recruiting), Anita (HRBP), Finance partner: Gaurav
+
+Priyanka: Hiring is our theme today. Engineering and SRE are badly understaffed and it's slowing delivery.
+
+Raj: The backend and SRE pipeline is slow. We have offers out but candidates are declining over compensation. This is becoming a blocker for the engineering roadmap.
+
+Gaurav: From finance, there's a risk - if we raise comp bands to close candidates, we exceed the Q3 headcount budget. That's a real tradeoff.
+
+Priyanka: I'm escalating the engineering staffing gap to the leadership team, because it's now affecting the Kubernetes migration timeline. High priority.
+
+Anita: There's also an open question about the return-to-office policy. The team is asking and we keep deferring it. We need a decision.
+
+Priyanka: Decision: we will prioritize backend and SRE roles over generalist hiring this quarter, and approve a 10 percent comp-band increase for those two roles. Raj, you own accelerating the two senior SRE offers, target end of June.
+
+Raj: Got it, I own the two senior SRE offers by end of June.
+
+Gaurav: Open question for finance - do we fund the comp increase from the Q3 buffer or defer other spend? I need a call.
+
+Priyanka: Let's resolve the comp-funding question with the CFO by Thursday. Follow-ups: Raj will refresh the candidate pipeline report by Friday, and Anita will draft the RTO policy options as a next step. Overall the mood is constructive but a bit anxious about budget.

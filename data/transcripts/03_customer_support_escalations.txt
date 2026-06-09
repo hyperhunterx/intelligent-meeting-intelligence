@@ -1,0 +1,22 @@
+Customer Support Escalations Review - 9 June 2026
+Attendees: Deepa (Support Lead), Carlos (Tier-2), Fatima (Success), Eng partner: Tom
+
+Deepa: We've had a rough week. Refund failures are spiking and customers are angry. Let's triage.
+
+Carlos: The number one issue is that refunds over 500 dollars silently fail. Customers don't get their money and we don't get an alert. This is a critical blocker for the support team.
+
+Tom: That sounds like it ties back to the payment service. I'll investigate whether it's the same gateway timeout issue from engineering, due Thursday.
+
+Deepa: I'm escalating the silent refund failures to leadership - this is damaging trust and it's our highest priority.
+
+Fatima: There's a risk here too. Two enterprise accounts, worth a lot of revenue, have threatened to churn if refunds aren't fixed this week. That's a high business risk.
+
+Carlos: Also the support dashboard shows stale ticket data, which makes triage slow. It's a blocker for the whole team.
+
+Deepa: Decision: we will add a real-time alert when refund failure rate exceeds 2 percent, so we catch this immediately. Carlos, you own setting up that alert by June 17.
+
+Carlos: Yes, I'll own the refund-failure alert, June 17.
+
+Fatima: Open question - should we proactively credit the affected enterprise customers, or wait for the fix? We need a call on that.
+
+Deepa: Let's decide the proactive-credit question with finance by Monday. Follow-ups: Fatima will compile the list of affected accounts by tomorrow, and I'll send a daily refund-status update to leadership as a next step. The mood is tense and frustrated, honestly.
