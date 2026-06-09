@@ -19,6 +19,7 @@ from app import llm
 from app.enrich import normalize_name, severity_score, is_duplicate_escalation
 from app.models import (
     Meeting, Person, Project, Task, Escalation, Risk, Blocker, Decision,
+    OpenQuestion, FollowUp,
 )
 
 
@@ -132,6 +133,18 @@ def ingest_meeting(session: Session, text: str, title: str | None = None,
         session.add(Decision(description=d.description, rationale=d.rationale,
                             project=project, meeting=meeting))
 
+    # 7. Open questions & follow-up actions.
+    for q in extraction.open_questions:
+        project = _get_or_create_project(session, q.project)
+        session.add(OpenQuestion(question=q.question, project=project, meeting=meeting))
+    for f in extraction.follow_ups:
+        owner = _get_or_create_person(session, f.owner)
+        if owner and owner not in meeting.participants:
+            meeting.participants.append(owner)
+        project = _get_or_create_project(session, f.project)
+        session.add(FollowUp(description=f.description, owner=owner,
+                            project=project, meeting=meeting))
+
     session.commit()
 
     return {
@@ -148,6 +161,8 @@ def ingest_meeting(session: Session, text: str, title: str | None = None,
             "risks": len(extraction.risks),
             "blockers": len(extraction.blockers),
             "decisions": len(extraction.decisions),
+            "open_questions": len(extraction.open_questions),
+            "follow_ups": len(extraction.follow_ups),
         },
         "extraction": extraction.model_dump(),
     }

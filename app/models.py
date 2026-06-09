@@ -52,6 +52,8 @@ class Meeting(Base):
     risks = relationship("Risk", back_populates="meeting")
     blockers = relationship("Blocker", back_populates="meeting")
     decisions = relationship("Decision", back_populates="meeting")
+    open_questions = relationship("OpenQuestion", back_populates="meeting")
+    follow_ups = relationship("FollowUp", back_populates="meeting")
 
 
 class Person(Base):
@@ -79,6 +81,8 @@ class Project(Base):
     risks = relationship("Risk", back_populates="project")
     blockers = relationship("Blocker", back_populates="project")
     decisions = relationship("Decision", back_populates="project")
+    open_questions = relationship("OpenQuestion", back_populates="project")
+    follow_ups = relationship("FollowUp", back_populates="project")
 
 
 class Task(Base):
@@ -154,3 +158,30 @@ class Decision(Base):
 
     project = relationship("Project", back_populates="decisions")
     meeting = relationship("Meeting", back_populates="decisions")
+
+
+class OpenQuestion(Base):
+    """An unresolved question raised in a meeting (spec: 'key decisions and open questions')."""
+    __tablename__ = "open_questions"
+    id = Column(Integer, primary_key=True)
+    question = Column(Text)
+    project_id = Column(ForeignKey("projects.id"))
+    meeting_id = Column(ForeignKey("meetings.id"))
+    status = Column(String, default="open")
+
+    project = relationship("Project", back_populates="open_questions")
+    meeting = relationship("Meeting", back_populates="open_questions")
+
+
+class FollowUp(Base):
+    """A follow-up action / next step (spec: 'follow-up actions and next steps')."""
+    __tablename__ = "follow_ups"
+    id = Column(Integer, primary_key=True)
+    description = Column(Text)
+    owner_id = Column(ForeignKey("people.id"))
+    project_id = Column(ForeignKey("projects.id"))
+    meeting_id = Column(ForeignKey("meetings.id"))
+
+    owner = relationship("Person")
+    project = relationship("Project", back_populates="follow_ups")
+    meeting = relationship("Meeting", back_populates="follow_ups")

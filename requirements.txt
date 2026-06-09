@@ -7,5 +7,7 @@ python-dotenv
 openai
 python-multipart
 jinja2
+pypdf
+python-docx
 pytest
 httpx

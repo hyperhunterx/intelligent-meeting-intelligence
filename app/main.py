@@ -25,6 +25,7 @@ from app.queries import compute_insights, nl_query, build_graph
 from app.reports import build_report
 from app.schemas import IngestRequest, QueryRequest, QueryResponse, ReportRequest
 from app.models import Meeting, Person, Project, Task, Escalation, Risk
+from app.files import extract_text
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -58,8 +59,11 @@ def api_ingest(req: IngestRequest, db: Session = Depends(get_session)):
 async def api_ingest_file(file: UploadFile = File(...),
                           title: str | None = Form(None),
                           db: Session = Depends(get_session)):
-    """Ingest an uploaded text document (.txt/.md)."""
-    raw = (await file.read()).decode("utf-8", errors="ignore")
+    """Ingest an uploaded document — .txt, .md, .pdf, or .docx."""
+    raw = extract_text(file.filename, await file.read())
+    if not raw.strip():
+        raise HTTPException(status_code=400,
+                            detail="Could not extract any text from that file.")
     return ingest_meeting(db, raw, title=title or file.filename, source_type="file")
 
 
@@ -124,6 +128,13 @@ def api_meeting_detail(meeting_id: int, db: Session = Depends(get_session)):
         "blockers": [{"description": b.description, "status": b.status} for b in m.blockers],
         "decisions": [{"description": d.description, "rationale": d.rationale}
                       for d in m.decisions],
+        "open_questions": [{"question": q.question, "status": q.status,
+                            "project": q.project.display_name if q.project else None}
+                           for q in m.open_questions],
+        "follow_ups": [{"description": f.description,
+                        "owner": f.owner.display_name if f.owner else None,
+                        "project": f.project.display_name if f.project else None}
+                       for f in m.follow_ups],
     }
 
 
@@ -141,9 +152,12 @@ def api_delete_meeting(meeting_id: int, db: Session = Depends(get_session)):
         raise HTTPException(status_code=404, detail="Meeting not found")
 
     title = m.title
+    child_collections = (m.tasks, m.escalations, m.risks, m.blockers, m.decisions,
+                         m.open_questions, m.follow_ups)
     counts = {"tasks": len(m.tasks), "escalations": len(m.escalations),
               "risks": len(m.risks), "blockers": len(m.blockers),
-              "decisions": len(m.decisions)}
+              "decisions": len(m.decisions),
+              "open_questions": len(m.open_questions), "follow_ups": len(m.follow_ups)}
 
     # Other escalations may point to this meeting's escalations as duplicates —
     # null those references first so we don't leave a dangling foreign key.
@@ -154,7 +168,7 @@ def api_delete_meeting(meeting_id: int, db: Session = Depends(get_session)):
 
     # Remember the people/projects this meeting touched, to check for orphans after.
     people, projects = set(m.participants), set()
-    for coll in (m.tasks, m.escalations, m.risks, m.blockers, m.decisions):
+    for coll in child_collections:
         for x in coll:
             if getattr(x, "project", None):
                 projects.add(x.project)
@@ -164,7 +178,7 @@ def api_delete_meeting(meeting_id: int, db: Session = Depends(get_session)):
                 people.add(x.raised_by)
 
     # Delete the extracted items, then the participant links, then the meeting.
-    for coll in (m.tasks, m.escalations, m.risks, m.blockers, m.decisions):
+    for coll in child_collections:
         for x in list(coll):
             db.delete(x)
     m.participants.clear()
@@ -180,7 +194,8 @@ def api_delete_meeting(meeting_id: int, db: Session = Depends(get_session)):
             removed_people += 1
     for pr in projects:
         db.refresh(pr)
-        if not (pr.tasks or pr.escalations or pr.risks or pr.blockers or pr.decisions):
+        if not (pr.tasks or pr.escalations or pr.risks or pr.blockers
+                or pr.decisions or pr.open_questions or pr.follow_ups):
             db.delete(pr)
             removed_projects += 1
     db.commit()

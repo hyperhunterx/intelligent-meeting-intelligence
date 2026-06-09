@@ -117,8 +117,11 @@ Any OpenRouter model works — change one line in `.env`. Recommended defaults:
 
 | Spec requirement | Where |
 |---|---|
-| Accept summaries / transcripts / uploaded files | `POST /api/ingest`, `POST /api/ingest/file` |
-| Extract tasks, escalations, blockers, risks, decisions, deadlines, ownership | `llm.extract_meeting` + `extraction.py` |
+| Accept summaries / transcripts / **document files (.txt/.md/.pdf/.docx)** | `POST /api/ingest`, `POST /api/ingest/file` (`files.extract_text`) |
+| Extract tasks, escalations, blockers, risks, deadlines, ownership | `llm.extract_meeting` + `extraction.py` |
+| Extract **key decisions & open questions** | `decisions` + `open_questions` tables |
+| Extract **follow-up actions / next steps** | `follow_ups` table |
+| Risks & inter-team dependencies | `risks` + `teams` fields + dependency map |
 | Structured, queryable storage + relationships | `models.py` (FK graph), `queries.build_graph` |
 | Conversational natural-language querying | `POST /api/query` (`queries.nl_query`) |
 | Org insight generation (trends/health/workload/gaps/deps) | `GET /api/insights` (`compute_insights`) |

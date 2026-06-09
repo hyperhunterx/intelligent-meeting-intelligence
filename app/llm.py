@@ -30,14 +30,17 @@ _EXTRACTION_SHAPE = """{
   "escalations": [{"description": str, "raised_by": str, "project": str, "priority": "low|medium|high", "teams": [str]}],
   "risks": [{"description": str, "project": str, "impact": str, "priority": "low|medium|high"}],
   "blockers": [{"description": str, "project": str, "status": str}],
-  "decisions": [{"description": str, "rationale": str, "project": str}]
+  "decisions": [{"description": str, "rationale": str, "project": str}],
+  "open_questions": [{"question": str, "project": str}],
+  "follow_ups": [{"description": str, "owner": str, "project": str}]
 }"""
 
 _EXTRACT_SYSTEM = (
     "You are an organizational intelligence engine. You read raw meeting content "
     "(summaries, transcripts, or chat) and extract structured intelligence: projects, "
     "people, action items with owners and deadlines, escalations and who raised them, "
-    "risks, blockers, and key decisions. Infer priority and urgency from tone. "
+    "risks, blockers, key decisions, OPEN QUESTIONS (unresolved questions raised but not "
+    "answered), and FOLLOW-UPS (next steps / follow-up actions). Infer priority and urgency from tone. "
     "Use the person's name as written. Only include items actually supported by the text "
     "(do not invent). Respond with ONLY a JSON object matching this shape:\n"
     + _EXTRACTION_SHAPE

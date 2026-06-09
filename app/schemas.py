@@ -51,6 +51,17 @@ class ExtractedDecision(BaseModel):
     project: Optional[str] = None
 
 
+class ExtractedOpenQuestion(BaseModel):
+    question: str
+    project: Optional[str] = None
+
+
+class ExtractedFollowUp(BaseModel):
+    description: str
+    owner: Optional[str] = None
+    project: Optional[str] = None
+
+
 class MeetingExtraction(BaseModel):
     """The complete structured intelligence pulled from one meeting."""
     title: Optional[str] = None
@@ -64,6 +75,8 @@ class MeetingExtraction(BaseModel):
     risks: list[ExtractedRisk] = Field(default_factory=list)
     blockers: list[ExtractedBlocker] = Field(default_factory=list)
     decisions: list[ExtractedDecision] = Field(default_factory=list)
+    open_questions: list[ExtractedOpenQuestion] = Field(default_factory=list)
+    follow_ups: list[ExtractedFollowUp] = Field(default_factory=list)
 
 
 # ---------- API request/response models ----------

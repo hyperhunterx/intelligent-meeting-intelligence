@@ -182,6 +182,8 @@ document.addEventListener("click", async (ev) => {
           ${items("Risks", d.risks, r => `<div class="xitem">⚠️ ${esc(r.description)} ${prioBadge(r.priority)}</div>`)}
           ${items("Blockers", d.blockers, b => `<div class="xitem">⛔ ${esc(b.description)}</div>`)}
           ${items("Decisions", d.decisions, x => `<div class="xitem">📌 ${esc(x.description)}${x.rationale ? ` <span class="muted">— ${esc(x.rationale)}</span>` : ""}</div>`)}
+          ${items("Open questions", d.open_questions, q => `<div class="xitem">❓ ${esc(q.question)}${q.project ? ` <span class="muted">(${esc(q.project)})</span>` : ""}</div>`)}
+          ${items("Follow-ups / next steps", d.follow_ups, f => `<div class="xitem">➡️ ${esc(f.description)}${f.owner ? ` <span class="muted">— ${esc(f.owner)}</span>` : ""}</div>`)}
         </div>
       </div>`;
   } catch (e) { body.innerHTML = `<span style="color:var(--red)">${esc(e.message)}</span>`; }
