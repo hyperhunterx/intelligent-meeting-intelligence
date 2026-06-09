@@ -387,10 +387,16 @@ $("#fileInput").addEventListener("change", async (ev) => {
   const fd = new FormData(); fd.append("file", file);
   $("#ingestResult").innerHTML = `<span class="spinner"></span> Reading ${esc(file.name)}...`;
   try {
-    const r = await api("/api/ingest/file", { method: "POST", body: fd });
-    toast(`Ingested ${esc(r.title)} ✓`); refreshKpis(); loadTab($(".tab.active").dataset.tab);
-    $("#ingestResult").innerHTML = `<div class="muted">Ingested <b>${esc(r.title)}</b></div>`;
+    // Load the file's text into the editor — the user reviews, then clicks Extract.
+    const r = await api("/api/extract-text", { method: "POST", body: fd });
+    $("#ingestText").value = r.text;
+    if (!$("#ingestTitle").value) $("#ingestTitle").value = r.filename.replace(/\.[^.]+$/, "");
+    $("#ingestResult").innerHTML =
+      `<div class="muted">Loaded <b>${esc(r.filename)}</b> (${r.text.length} chars) into the box.
+       Review it, then click <b>Extract intelligence</b>.</div>`;
+    toast("File text loaded ✓");
   } catch (e) { $("#ingestResult").innerHTML = `<span style="color:var(--red)">${esc(e.message)}</span>`; }
+  finally { ev.target.value = ""; }   // reset so the same file can be re-selected
 });
 
 // ---------- Speech-to-text (browser-native Web Speech API; no server, no key) ----------

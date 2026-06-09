@@ -59,12 +59,30 @@ def api_ingest(req: IngestRequest, db: Session = Depends(get_session)):
 async def api_ingest_file(file: UploadFile = File(...),
                           title: str | None = Form(None),
                           db: Session = Depends(get_session)):
-    """Ingest an uploaded document — .txt, .md, .pdf, or .docx."""
+    """Ingest an uploaded document in one shot — .txt, .md, .pdf, or .docx.
+
+    (The dashboard instead uses /api/extract-text so the user can review the text
+    before extracting, but this one-shot route stays for API/programmatic use.)
+    """
     raw = extract_text(file.filename, await file.read())
     if not raw.strip():
         raise HTTPException(status_code=400,
                             detail="Could not extract any text from that file.")
     return ingest_meeting(db, raw, title=title or file.filename, source_type="file")
+
+
+@app.post("/api/extract-text")
+async def api_extract_text(file: UploadFile = File(...)):
+    """Extract plain text from an uploaded document WITHOUT ingesting it.
+
+    The dashboard calls this to load a file's text into the editor, so the user
+    can review/edit before clicking "Extract intelligence".
+    """
+    raw = extract_text(file.filename, await file.read())
+    if not raw.strip():
+        raise HTTPException(status_code=400,
+                            detail="Could not extract any text from that file.")
+    return {"text": raw, "filename": file.filename}
 
 
 # ---------------- Query / insights / graph / report ----------------
