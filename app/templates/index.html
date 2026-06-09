@@ -25,7 +25,11 @@
       <section class="card">
         <h2>Ingest a meeting</h2>
         <textarea id="ingestText" rows="9"
-          placeholder="Paste a meeting summary, transcript, or chat thread..."></textarea>
+          placeholder="Paste a meeting summary, transcript, or chat thread... or click Speak to dictate."></textarea>
+        <div class="row mic-row">
+          <button id="micBtn" class="ghost mic" title="Dictate with your voice (Chrome/Edge)">🎤 Speak</button>
+          <span id="micStatus" class="mic-status"></span>
+        </div>
         <div class="row">
           <input id="ingestTitle" type="text" placeholder="Title (optional)" />
         </div>

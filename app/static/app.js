@@ -391,6 +391,60 @@ $("#fileInput").addEventListener("change", async (ev) => {
   } catch (e) { $("#ingestResult").innerHTML = `<span style="color:var(--red)">${esc(e.message)}</span>`; }
 });
 
+// ---------- Speech-to-text (browser-native Web Speech API; no server, no key) ----------
+(function setupSpeech() {
+  const micBtn = $("#micBtn"), status = $("#micStatus"), ta = $("#ingestText");
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {                                   // Firefox / unsupported
+    micBtn.disabled = true;
+    micBtn.textContent = "🎤 n/a";
+    micBtn.title = "Speech recognition needs Chrome or Edge";
+    status.textContent = "Voice input needs Chrome or Edge.";
+    return;
+  }
+  const rec = new SR();
+  rec.continuous = true;        // keep listening across pauses
+  rec.interimResults = true;    // show words live as you speak
+  rec.lang = "en-US";
+  let listening = false, baseText = "", finalText = "";
+
+  micBtn.addEventListener("click", () => {
+    if (listening) { rec.stop(); return; }
+    // Append to whatever is already in the box.
+    baseText = ta.value ? ta.value.replace(/\s*$/, "") + " " : "";
+    finalText = "";
+    try { rec.start(); } catch (_) { /* ignore double-start */ }
+  });
+
+  rec.onstart = () => {
+    listening = true;
+    micBtn.classList.add("recording");
+    micBtn.textContent = "⏹ Stop";
+    status.textContent = "🎙️ Listening… speak now";
+  };
+  rec.onresult = (event) => {
+    let interim = "";
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const t = event.results[i][0].transcript;
+      if (event.results[i].isFinal) finalText += t + " ";
+      else interim += t;
+    }
+    ta.value = baseText + finalText + interim;   // live update
+  };
+  rec.onerror = (e) => {
+    status.textContent = e.error === "not-allowed"
+      ? "Microphone blocked — allow mic access for this site."
+      : "Mic error: " + e.error;
+  };
+  rec.onend = () => {
+    listening = false;
+    micBtn.classList.remove("recording");
+    micBtn.textContent = "🎤 Speak";
+    if (!status.textContent.startsWith("Mic") && !status.textContent.startsWith("Voice"))
+      status.textContent = finalText ? "✓ Captured. Edit if needed, then Extract intelligence." : "";
+  };
+})();
+
 // ---------- Query ----------
 async function runQuery(q) {
   $("#queryInput").value = q;

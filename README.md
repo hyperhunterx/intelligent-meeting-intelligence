@@ -129,10 +129,12 @@ Any OpenRouter model works — change one line in `.env`. Recommended defaults:
 - ✅ **Real-time leadership dashboard** (the SPA)
 - ✅ **Auto-generated follow-up / action report** (`reports.build_report`)
 - ✅ **Sentiment & urgency analysis** (per meeting, from extraction)
+- ✅ **Voice-based ingestion** — click 🎤 Speak and dictate the meeting straight into the
+  transcription box (browser-native Web Speech API; works in Chrome/Edge, no key needed)
 
 ### Future work (designed for, not built)
 Multi-agent orchestration · vector/semantic search (Chroma/FAISS) · Slack/Teams
-notifications · voice ingestion (speech-to-text).
+notifications.
 
 ---
 
