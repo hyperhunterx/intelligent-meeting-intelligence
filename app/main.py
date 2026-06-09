@@ -26,7 +26,7 @@ from app.reports import build_report
 from app.schemas import (
     IngestRequest, QueryRequest, QueryResponse, ReportRequest, ReportEmailRequest,
 )
-from app.models import Meeting, Person, Project, Task, Escalation, Risk
+from app.models import Meeting, Person, Project, Task, Escalation, Risk, FollowUp
 from app.files import extract_text
 from app.email_send import send_email
 
@@ -197,17 +197,6 @@ def api_delete_meeting(meeting_id: int, db: Session = Depends(get_session)):
         db.query(Escalation).filter(Escalation.duplicate_of_id.in_(esc_ids)).update(
             {Escalation.duplicate_of_id: None}, synchronize_session=False)
 
-    # Remember the people/projects this meeting touched, to check for orphans after.
-    people, projects = set(m.participants), set()
-    for coll in child_collections:
-        for x in coll:
-            if getattr(x, "project", None):
-                projects.add(x.project)
-            if getattr(x, "owner", None):
-                people.add(x.owner)
-            if getattr(x, "raised_by", None):
-                people.add(x.raised_by)
-
     # Delete the extracted items, then the participant links, then the meeting.
     for coll in child_collections:
         for x in list(coll):
@@ -216,19 +205,22 @@ def api_delete_meeting(meeting_id: int, db: Session = Depends(get_session)):
     db.delete(m)
     db.flush()
 
-    # Orphan cleanup.
+    # GLOBAL orphan sweep — drop any project/person no longer referenced anywhere.
+    # A project can be "bare" (created from a meeting's projects list with no task or
+    # escalation linked to it), so we must sweep every project, not just the ones this
+    # meeting's items touched — otherwise bare projects linger forever.
     removed_people = removed_projects = 0
-    for p in people:
-        db.refresh(p)
-        if not p.meetings and not p.owned_tasks and not p.raised_escalations:
-            db.delete(p)
-            removed_people += 1
-    for pr in projects:
-        db.refresh(pr)
+    for pr in db.query(Project).all():
         if not (pr.tasks or pr.escalations or pr.risks or pr.blockers
                 or pr.decisions or pr.open_questions or pr.follow_ups):
             db.delete(pr)
             removed_projects += 1
+    for p in db.query(Person).all():
+        owns_followup = (db.query(FollowUp)
+                         .filter(FollowUp.owner_id == p.id).first() is not None)
+        if not (p.meetings or p.owned_tasks or p.raised_escalations or owns_followup):
+            db.delete(p)
+            removed_people += 1
     db.commit()
 
     return {"deleted": True, "title": title, "removed": counts,
